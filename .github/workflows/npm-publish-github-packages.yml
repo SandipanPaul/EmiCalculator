@@ -15,8 +15,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name SandipanPaul
-          git config user.email paul.sandipan04@gmail.com
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
