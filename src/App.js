@@ -60,169 +60,175 @@ const EMICalculator = () => {
     return monthlyEMI * months - principal;
   };
 
-  // Generate amortization schedule with floating rates
-  const generateSchedule = () => {
-    let remainingBalance = loanAmount;
-    let newSchedule = [];
-    let sortedPrepayments = [...prepayments].sort((a, b) => a.month - b.month);
-    let prepaymentIndex = 0;
-    let rateChangeCount = 0;
-    let lastRate = null;
-    let currentEMI = 0;
+  // Run calculation when inputs change
+  useEffect(() => {
+    // Move generateSchedule function inside useEffect to avoid dependency warning
+    const generateSchedule = () => {
+      let remainingBalance = loanAmount;
+      let newSchedule = [];
+      let sortedPrepayments = [...prepayments].sort((a, b) => a.month - b.month);
+      let prepaymentIndex = 0;
+      let rateChangeCount = 0;
+      let lastRate = null;
+      let currentEMI = 0;
 
-    // Calculate normal loan interest for comparison (using initial rate)
-    const initialRate =
-      rateType === "fixed" ? interestRate : getRateForMonth(1);
-    const normalLoanInterest = calculateNormalLoanInterest(
-      loanAmount,
-      initialRate,
-      loanPeriod
-    );
+      // Calculate normal loan interest for comparison (using initial rate)
+      const initialRate =
+        rateType === "fixed" ? interestRate : getRateForMonth(1);
+      const normalLoanInterest = calculateNormalLoanInterest(
+        loanAmount,
+        initialRate,
+        loanPeriod
+      );
 
-    for (let month = 1; month <= loanPeriod && remainingBalance > 0; month++) {
-      // Get the current rate for this month
-      const currentRate = getRateForMonth(month);
-      const monthlyRate = currentRate / 12 / 100;
+      for (let month = 1; month <= loanPeriod && remainingBalance > 0; month++) {
+        // Get the current rate for this month
+        const currentRate = getRateForMonth(month);
+        const monthlyRate = currentRate / 12 / 100;
 
-      // Check if rate changed
-      if (lastRate !== null && lastRate !== currentRate) {
-        rateChangeCount++;
+        // Check if rate changed
+        if (lastRate !== null && lastRate !== currentRate) {
+          rateChangeCount++;
 
-        // For floating rate: Recalculate EMI to maintain tenure
-        if (rateType === "floating") {
-          const remainingMonths = loanPeriod - month + 1;
-          currentEMI = calculateEMI(
-            remainingBalance,
-            currentRate,
-            remainingMonths
-          );
+          // For floating rate: Recalculate EMI to maintain tenure
+          if (rateType === "floating") {
+            const remainingMonths = loanPeriod - month + 1;
+            currentEMI = calculateEMI(
+              remainingBalance,
+              currentRate,
+              remainingMonths
+            );
+          }
+        } else if (month === 1) {
+          // First month calculation
+          currentEMI = calculateEMI(loanAmount, currentRate, loanPeriod);
         }
-      } else if (month === 1) {
-        // First month calculation
-        currentEMI = calculateEMI(loanAmount, currentRate, loanPeriod);
+
+        // Calculate interest for the month
+        const interestForMonth = remainingBalance * monthlyRate;
+
+        // Calculate principal for the month
+        let principalForMonth = currentEMI - interestForMonth;
+
+        // Adjust if this is the last payment
+        if (principalForMonth > remainingBalance) {
+          principalForMonth = remainingBalance;
+          currentEMI = principalForMonth + interestForMonth;
+        }
+
+        // Calculate monthly extra payment
+        let extraPaymentForMonth = 0;
+        if (
+          monthlyExtraPayment > 0 &&
+          remainingBalance - principalForMonth > monthlyExtraPayment
+        ) {
+          extraPaymentForMonth = monthlyExtraPayment;
+        } else if (monthlyExtraPayment > 0) {
+          // If remaining balance after principal payment is less than extra payment,
+          // only pay what's left
+          extraPaymentForMonth =
+            remainingBalance - principalForMonth > 0
+              ? remainingBalance - principalForMonth
+              : 0;
+        }
+
+        // Check if there's a lumpsum prepayment for this month
+        let lumpsumPrepayment = 0;
+        if (
+          prepaymentIndex < sortedPrepayments.length &&
+          sortedPrepayments[prepaymentIndex].month === month
+        ) {
+          lumpsumPrepayment = sortedPrepayments[prepaymentIndex].amount;
+          prepaymentIndex++;
+        }
+
+        // Calculate new remaining balance
+        remainingBalance =
+          remainingBalance -
+          principalForMonth -
+          extraPaymentForMonth -
+          lumpsumPrepayment;
+
+        // Ensure remaining balance doesn't go negative
+        if (remainingBalance < 0) {
+          remainingBalance = 0;
+        }
+
+        // Add to schedule
+        newSchedule.push({
+          month,
+          rate: currentRate,
+          emi: currentEMI,
+          interest: interestForMonth,
+          principal: principalForMonth,
+          extraPayment: extraPaymentForMonth,
+          lumpsumPrepayment: lumpsumPrepayment,
+          totalPayment: currentEMI + extraPaymentForMonth + lumpsumPrepayment,
+          balance: remainingBalance,
+          rateChanged: lastRate !== null && lastRate !== currentRate,
+        });
+
+        lastRate = currentRate;
+
+        // If balance is zero, we're done
+        if (remainingBalance === 0) {
+          break;
+        }
       }
 
-      // Calculate interest for the month
-      const interestForMonth = remainingBalance * monthlyRate;
+      // Calculate totals
+      const totalPayment = newSchedule.reduce(
+        (sum, row) => sum + row.emi + row.extraPayment + row.lumpsumPrepayment,
+        0
+      );
+      const totalInterest = newSchedule.reduce(
+        (sum, row) => sum + row.interest,
+        0
+      );
+      const totalExtraPayments = newSchedule.reduce(
+        (sum, row) => sum + row.extraPayment,
+        0
+      );
+      const totalLumpsumPrepayments = newSchedule.reduce(
+        (sum, row) => sum + row.lumpsumPrepayment,
+        0
+      );
+      const totalPrincipal = loanAmount;
+      const interestSaved = normalLoanInterest - totalInterest;
 
-      // Calculate principal for the month
-      let principalForMonth = currentEMI - interestForMonth;
+      // Calculate average EMI for summary display
+      const avgEMI =
+        newSchedule.length > 0
+          ? newSchedule.reduce((sum, row) => sum + row.emi, 0) /
+            newSchedule.length
+          : 0;
 
-      // Adjust if this is the last payment
-      if (principalForMonth > remainingBalance) {
-        principalForMonth = remainingBalance;
-        currentEMI = principalForMonth + interestForMonth;
-      }
-
-      // Calculate monthly extra payment
-      let extraPaymentForMonth = 0;
-      if (
-        monthlyExtraPayment > 0 &&
-        remainingBalance - principalForMonth > monthlyExtraPayment
-      ) {
-        extraPaymentForMonth = monthlyExtraPayment;
-      } else if (monthlyExtraPayment > 0) {
-        // If remaining balance after principal payment is less than extra payment,
-        // only pay what's left
-        extraPaymentForMonth =
-          remainingBalance - principalForMonth > 0
-            ? remainingBalance - principalForMonth
-            : 0;
-      }
-
-      // Check if there's a lumpsum prepayment for this month
-      let lumpsumPrepayment = 0;
-      if (
-        prepaymentIndex < sortedPrepayments.length &&
-        sortedPrepayments[prepaymentIndex].month === month
-      ) {
-        lumpsumPrepayment = sortedPrepayments[prepaymentIndex].amount;
-        prepaymentIndex++;
-      }
-
-      // Calculate new remaining balance
-      remainingBalance =
-        remainingBalance -
-        principalForMonth -
-        extraPaymentForMonth -
-        lumpsumPrepayment;
-
-      // Ensure remaining balance doesn't go negative
-      if (remainingBalance < 0) {
-        remainingBalance = 0;
-      }
-
-      // Add to schedule
-      newSchedule.push({
-        month,
-        rate: currentRate,
-        emi: currentEMI,
-        interest: interestForMonth,
-        principal: principalForMonth,
-        extraPayment: extraPaymentForMonth,
-        lumpsumPrepayment: lumpsumPrepayment,
-        totalPayment: currentEMI + extraPaymentForMonth + lumpsumPrepayment,
-        balance: remainingBalance,
-        rateChanged: lastRate !== null && lastRate !== currentRate,
+      setSchedule(newSchedule);
+      setSummary({
+        emi: avgEMI,
+        totalPayment,
+        totalInterest,
+        totalPrincipal,
+        totalExtraPayments,
+        totalLumpsumPrepayments,
+        monthsCompleted: newSchedule.length,
+        monthsSaved: loanPeriod - newSchedule.length,
+        interestSaved,
+        rateChanges: rateChangeCount,
+        totalPayable: totalInterest + loanAmount,
       });
+    };
 
-      lastRate = currentRate;
-
-      // If balance is zero, we're done
-      if (remainingBalance === 0) {
-        break;
-      }
-    }
-
-    // Calculate totals
-    const totalPayment = newSchedule.reduce(
-      (sum, row) => sum + row.emi + row.extraPayment + row.lumpsumPrepayment,
-      0
-    );
-    const totalInterest = newSchedule.reduce(
-      (sum, row) => sum + row.interest,
-      0
-    );
-    const totalExtraPayments = newSchedule.reduce(
-      (sum, row) => sum + row.extraPayment,
-      0
-    );
-    const totalLumpsumPrepayments = newSchedule.reduce(
-      (sum, row) => sum + row.lumpsumPrepayment,
-      0
-    );
-    const totalPrincipal = loanAmount;
-    const interestSaved = normalLoanInterest - totalInterest;
-
-    // Calculate average EMI for summary display
-    const avgEMI =
-      newSchedule.length > 0
-        ? newSchedule.reduce((sum, row) => sum + row.emi, 0) /
-          newSchedule.length
-        : 0;
-
-    setSchedule(newSchedule);
-    setSummary({
-      emi: avgEMI,
-      totalPayment,
-      totalInterest,
-      totalPrincipal,
-      totalExtraPayments,
-      totalLumpsumPrepayments,
-      monthsCompleted: newSchedule.length,
-      monthsSaved: loanPeriod - newSchedule.length,
-      interestSaved,
-      rateChanges: rateChangeCount,
-      totalPayable: totalInterest + loanAmount,
-    });
-  };
-
-  // Handle key press events for monthly extra payment
-  const handleMonthlyExtraPaymentKeyPress = (e) => {
-    if (e.key === "Enter") {
-      setMonthlyExtraPayment(monthlyExtraPaymentInput);
-    }
-  };
+    generateSchedule();
+  }, [
+    loanAmount,
+    interestRate,
+    loanPeriod,
+    prepayments,
+    monthlyExtraPayment,
+    rateType,
+    rateSchedule,
+  ]);
 
   // Get applicable rate for a given month
   const getRateForMonth = (month) => {
@@ -241,14 +247,15 @@ const EMICalculator = () => {
       const rate = parseFloat(newRateValue);
 
       if (month > 0 && month <= loanPeriod && rate > 0) {
-        // Create a new rate schedule with the new rate
         let updatedSchedule = [...rateSchedule];
 
-        // Find where to insert the new rate change
-        let insertIndex = updatedSchedule.findIndex((r) => month < r.toMonth);
+        // Find the period that contains the new rate's month
+        let insertIndex = updatedSchedule.findIndex(
+          (r) => month >= r.fromMonth && month <= r.toMonth
+        );
 
         if (insertIndex === -1) {
-          // Add at the end
+          // If month is after all periods, add at the end
           const lastPeriod = updatedSchedule[updatedSchedule.length - 1];
           if (month > lastPeriod.toMonth) {
             updatedSchedule.push({
@@ -256,31 +263,27 @@ const EMICalculator = () => {
               toMonth: loanPeriod,
               rate,
             });
-          } else {
-            lastPeriod.toMonth = month - 1;
-            updatedSchedule.push({
-              fromMonth: month,
-              toMonth: loanPeriod,
-              rate,
-            });
           }
         } else {
-          // Insert in the middle
           const existingPeriod = updatedSchedule[insertIndex];
-          if (month > existingPeriod.fromMonth) {
-            // Split existing period
-            const newPeriod1 = { ...existingPeriod, toMonth: month - 1 };
-            const newPeriod2 = {
+          if (month === existingPeriod.fromMonth) {
+            // Overwrite the period from this month
+            updatedSchedule.splice(insertIndex, 0, {
+              fromMonth: month,
+              toMonth: existingPeriod.toMonth,
+              rate,
+            });
+            updatedSchedule[insertIndex + 1].toMonth = month - 1;
+          } else {
+            // Split the period
+            const before = { ...existingPeriod, toMonth: month - 1 };
+            const after = {
               fromMonth: month,
               toMonth: existingPeriod.toMonth,
               rate,
             };
-            updatedSchedule[insertIndex] = newPeriod1;
-            updatedSchedule.splice(insertIndex + 1, 0, newPeriod2);
-          } else {
-            // Replace from this point
-            existingPeriod.fromMonth = month;
-            existingPeriod.rate = rate;
+            updatedSchedule[insertIndex] = before;
+            updatedSchedule.splice(insertIndex + 1, 0, after);
           }
         }
 
@@ -339,33 +342,24 @@ const EMICalculator = () => {
     setPrepayments(newPrepayments);
   };
 
-  // Run calculation when inputs change
-  useEffect(() => {
-    generateSchedule();
-  }, [
-    loanAmount,
-    interestRate,
-    loanPeriod,
-    prepayments,
-    monthlyExtraPayment,
-    rateType,
-    rateSchedule,
-    generateSchedule, // Added missing dependency
-  ]);
-
   // Update rate schedule when switching rate types or changing base rate
   useEffect(() => {
     if (rateType === "fixed") {
       setRateSchedule([
         { fromMonth: 1, toMonth: loanPeriod, rate: interestRate },
       ]);
-    } else if (rateSchedule.length === 1 && rateSchedule[0].fromMonth === 1) {
-      // Initialize floating rate schedule with current rate
+    } else if (
+      rateSchedule.length === 1 &&
+      rateSchedule[0].fromMonth === 1 &&
+      rateSchedule[0].toMonth === loanPeriod &&
+      rateSchedule[0].rate !== interestRate
+    ) {
+      // Only update if the initial floating schedule matches the old base rate
       setRateSchedule([
         { fromMonth: 1, toMonth: loanPeriod, rate: interestRate },
       ]);
     }
-  }, [rateType, interestRate, loanPeriod, rateSchedule]); // Added missing dependency
+  }, [rateType, interestRate, loanPeriod]); // <-- removed rateSchedule from deps
 
   // Prepare chart data
   const chartData = schedule.map((row) => ({
@@ -407,6 +401,13 @@ const EMICalculator = () => {
     }
 
     return result;
+  };
+
+  // Handle key press events for monthly extra payment
+  const handleMonthlyExtraPaymentKeyPress = (e) => {
+    if (e.key === "Enter") {
+      setMonthlyExtraPayment(monthlyExtraPaymentInput);
+    }
   };
 
   return (
