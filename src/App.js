@@ -246,6 +246,7 @@ const EMICalculator = () => {
     rateSchedule,
     calculateNormalLoanInterest,
     getRateForMonth,
+    calculateEMI, // Add this dependency
   ]);
 
   // Add new floating rate change
