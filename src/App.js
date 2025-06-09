@@ -350,6 +350,7 @@ const EMICalculator = () => {
     monthlyExtraPayment,
     rateType,
     rateSchedule,
+    generateSchedule, // Added missing dependency
   ]);
 
   // Update rate schedule when switching rate types or changing base rate
@@ -364,7 +365,7 @@ const EMICalculator = () => {
         { fromMonth: 1, toMonth: loanPeriod, rate: interestRate },
       ]);
     }
-  }, [rateType, interestRate, loanPeriod]);
+  }, [rateType, interestRate, loanPeriod, rateSchedule]); // Added missing dependency
 
   // Prepare chart data
   const chartData = schedule.map((row) => ({
