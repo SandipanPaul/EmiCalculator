@@ -1,0 +1,606 @@
+.calculator-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 32px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.title {
+  text-align: center;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-weight: 800;
+  margin-bottom: clamp(20px, 4vw, 40px);
+  letter-spacing: -0.02em;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.input-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 4vw, 40px);
+  margin-bottom: clamp(24px, 4vw, 40px);
+  animation: slideIn 0.6s ease-out 0.2s both;
+}
+
+@media (max-width: 1024px) {
+  .input-section {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.loan-details,
+.prepayments-section {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  padding: clamp(20px, 4vw, 32px);
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.loan-details::before,
+.prepayments-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+  border-radius: 16px 16px 0 0;
+}
+
+.loan-details:hover,
+.prepayments-section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.section-title {
+  background: linear-gradient(135deg, #1e40af, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 700;
+  margin-bottom: 24px;
+  letter-spacing: -0.01em;
+}
+
+.input-group {
+  margin-bottom: 20px;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+}
+
+.input-group input:hover {
+  border-color: #9ca3af;
+}
+
+.prepayment-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 60px;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-weight: 700;
+  color: #374151;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.prepayment-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 60px;
+  gap: 12px;
+  margin-bottom: 12px;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.prepayment-row input {
+  padding: 10px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.prepayment-row input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: rgba(255, 255, 255, 1);
+}
+
+.remove-btn,
+.add-btn {
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.remove-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.remove-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.add-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.add-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.summary-section {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  padding: clamp(24px, 4vw, 40px);
+  border-radius: 20px;
+  margin-bottom: clamp(24px, 4vw, 40px);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  animation: scaleIn 0.6s ease-out 0.4s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b, #ef4444, #10b981);
+  border-radius: 20px 20px 0 0;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+}
+
+.summary-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, currentColor, transparent);
+  opacity: 0.3;
+}
+
+.summary-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-value {
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.summary-value.emi {
+  color: #1e40af;
+}
+
+.summary-value.extra {
+  color: #7c3aed;
+}
+
+.summary-value.interest {
+  color: #dc2626;
+}
+
+.summary-value.saved {
+  color: #059669;
+}
+
+.summary-value.period {
+  color: #7c3aed;
+}
+
+.chart-section {
+  margin-bottom: clamp(24px, 4vw, 40px);
+  animation: fadeInUp 0.6s ease-out 0.6s both;
+}
+
+.chart-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  padding: clamp(20px, 4vw, 32px);
+  border-radius: 20px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.table-section {
+  margin-bottom: clamp(24px, 4vw, 40px);
+  animation: fadeInUp 0.6s ease-out 0.8s both;
+}
+
+.table-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  overflow-x: auto;
+  transition: all 0.3s ease;
+}
+
+.table-container:hover {
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+.schedule-table th {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 700;
+  color: #1e40af;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #3b82f6;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.schedule-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #111827;
+  transition: all 0.2s ease;
+}
+
+.schedule-table tr {
+  transition: all 0.2s ease;
+}
+
+.schedule-table tr:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+  transform: scale(1.001);
+}
+
+.schedule-table tr.highlight {
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  border-left: 4px solid #10b981;
+}
+
+.extra-payment {
+  font-weight: 700;
+  color: #7c3aed;
+  text-shadow: 0 1px 2px rgba(124, 58, 237, 0.1);
+}
+
+.lumpsum-payment {
+  font-weight: 700;
+  color: #059669;
+  text-shadow: 0 1px 2px rgba(5, 150, 105, 0.1);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+.table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+/* Loading animation for heavy calculations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.calculating {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .calculator-container {
+    padding: 16px;
+  }
+
+  .prepayment-header,
+  .prepayment-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .remove-btn,
+  .add-btn {
+    grid-column: span 2;
+    margin-top: 8px;
+  }
+
+  .schedule-table th,
+  .schedule-table td {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+}
+.form-help-text {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Modern Rate Type Toggle */
+.rate-type-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.rate-toggle-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.rate-toggle-btn:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.rate-toggle-btn.active {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+.rate-toggle-btn.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 12px 12px 0 0;
+}
+
+.rate-toggle-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.rate-toggle-btn:hover .rate-toggle-icon {
+  transform: scale(1.1);
+}
+
+.rate-toggle-text {
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: block;
+  letter-spacing: 0.01em;
+}
+
+.rate-toggle-btn.active .rate-toggle-text {
+  color: #1e40af;
+}
+
+.rate-toggle-desc {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.3;
+  display: block;
+  font-weight: 400;
+}
+
+.rate-toggle-btn.active .rate-toggle-desc {
+  color: #3730a3;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .rate-type-toggle {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .rate-toggle-btn {
+    min-height: 800px;
+    padding: 12px 8px;
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .rate-toggle-icon {
+    font-size: 20px;
+    margin-bottom: 0;
+    margin-right: 12px;
+  }
+
+  .rate-toggle-text {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+
+  .rate-toggle-desc {
+    font-size: 10px;
+  }
+}
