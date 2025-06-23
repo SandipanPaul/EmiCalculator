@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/EmiCalculator/static/css/main.1524b3f3.css",
+    "main.js": "/EmiCalculator/static/js/main.491b4d72.js",
+    "index.html": "/EmiCalculator/index.html",
+    "main.1524b3f3.css.map": "/EmiCalculator/static/css/main.1524b3f3.css.map",
+    "main.491b4d72.js.map": "/EmiCalculator/static/js/main.491b4d72.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1524b3f3.css",
+    "static/js/main.491b4d72.js"
+  ]
+}
