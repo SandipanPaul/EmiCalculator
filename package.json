@@ -1,7 +1,6 @@
 {
   "name": "emi-calculator",
   "version": "0.1.0",
-  "homepage": "https://sandipanpaul.github.io/EmiCalculator",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
@@ -15,7 +14,6 @@
   },
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -b main -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
