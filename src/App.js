@@ -15,7 +15,6 @@ import {
   Cell,
   ComposedChart,
   Area,
-  AreaChart,
 } from "recharts";
 
 const EnhancedCalculator = () => {
